@@ -1,0 +1,28 @@
+Paper1
+1. No-strand-bias conditions
+2. Q - what is equilibrium point?
+Paper2
+1. Sources of strand compositional asymmetry?
+2. Why not A-T skew?
+3. What is template and coding strand?
+4. 
+Paper3 - Cumulative skew
+1. Trade-off- large vs small window size
+2. Note that SOME OF THE LOCAL POLARITY SWITCHES ARE IMPORTANT
+3. Do a CUMULATIVE skew - sum/INTEGRATE over the windows from start to current
+4. Max value at terminus, min at ori
+
+We are concerned with finding the origin of replication
+
+Auto-correlation, cumulative skew OR iCorr.
+
+
+Cumulative skew revisited
+1. Genome rearrangements?
+2. The skew, calculated as (G–C)/(G+C) for a window sliding along the sequence, was shown to switch polarity in the vicinity of the terminus (ter) and origin (ori) of replication,
+3. Such plots may not always be very illustrative due to visible fluctuations for a small window size, while larger windows may hide precise coordinates of polarity switches
+4. Use CUMULATIVE over several windows
+5.  distances between global extremities are very close to 50% of the respective genome lengths and the minimum is always located at the origin
+6. Genome rearragements
+7. Different replication mechanism leads to parabolic curve
+8. Little is known about archaea

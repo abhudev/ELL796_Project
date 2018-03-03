@@ -1,0 +1,121 @@
+\documentclass[10pt]{article}
+\usepackage{textcomp}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage[margin=1.5in]{geometry}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{amssymb}
+% \usepackage{tgbonum}
+% \usepackage{geometry}
+% \graphicspath{{../SCRIPTS/plots/}}
+
+\title{\textbf{Project proposal\\Identification of replication origin in DNA sequence\\ELL796}}
+\author{Abhishek Pathak}
+% \date{\today \\First created on 13 December 2017}
+\date{}
+\def\code#1{\texttt{#1}}
+\begin{document}
+\maketitle
+
+\section{Introduction}
+
+DNA replication is a fundamental biological process, vital for reproduction. It is the mechanism through which dividing cells each get a copy of the original genome. This replication is carried out chromosome by chromosome. The origin of replication in a chromosome can be defined as the region where this process of replication starts, extending out to the rest of the chromosome. While origin of replication can be found experimentally by deleting portions of the chromosome and seeing when it loses the ability to replicate, computationally predicting its location can be time-saving and inexpensive. This can be done by studying characteristics of the nucleotide sequence, guided by the knowledge of the mechanics of chromosome replication. Knowledge of the origin of replication in different species is important to understand the process of DNA replication, as well as for various applications including drug design.
+
+\textbf{Z-curve???}
+
+\textbf{Importance of mutation/error rate in evolutionary variations?}
+
+\section{How does replication work?}
+
+DNA is a long double-stranded molecule. At the time of replication, helicase separates the DNA strands a little bit, forming the initial \textit{replication bubble}, a gap where the two strands are separate. The RNA primase then adds primers to each of these separated strands, which serve as the start points for DNA Pol III to form the complementary strand for the unwound portions of the strands. As the helicase continues to split the DNA strand, due to the directionality of DNA (5' to 3' and 3' to 5'), DNA Pol III can move only along one direction. Therefore, the \textbf{leading strand} is continuously replicated by the DNA Pol III as it can move along the corresponding direction, while the \textbf{lagging strand} cannot be continuously replicated, as DNA Pol III can move only in the opposite direction. Instead, as the replication bubble grows larger, a new RNA primase comes along and places a primer at a new location on the lagging strand. DNA pol III then replicates another continuous fragment of the lagigng strand. In this way, the leading strand is continuously replicated, while the lagging strand is replicated in short fragments called \textbf{Okazaki fragments}. At the end of the replication of each Okazaki fragment, DNA Pol I replaces the RNA primer with nucleotides, and then the DNA ligase joins the newly added Okazaki fragment to the previously replicated portion of the lagging strand. This process continues till the entire chromosome is replicated.
+
+The point where the replication bubble forms is called the replication origin. In the general mechanism of DNA replication, the origin of replication usually refers to a region of DNA called a DnaA box. The initiation of replication is mediated by a protein called DnaA, which binds to short segments in the DnaA box. One expects such short segments to occur frequently in such a DnaA box, and therefore one approach towards finding a DnaA box could be to find the region in the genome where short, nearly identical fragments occur frequently. However, this is a computationally expensive approach. The initiation of replication also happens in the DnaA box. 
+
+\textbf{There are other mechanisms of replication, which we may/may not discuss later. Our scope will mostly be limited to this mechanism, for circular chromosomes.} There are other similar, but slightly different, mechanisms of replication in other organisms.
+
+Despite dissimilarities, the replication origin usually has similar characteristics across different organisms, such as high AT content (as the A-T interactions are weaker than the G-C interactions, repeats of A-T pairs are easiere to separate) \cite{AT}.
+
+This asymmetry in DNA replication has important implications for properties of the leading and lagging strands. The leading strand spends most of its `life' in double-stranded form, while the lagging strand spends significant time in single-stranded form. Therefore, generally speaking, the lagging strand is more susceptible to mutations. More specifically, deamination rates of cytosine (leading to it pairing with A and a relative abundance of G and T on that strand) increase 100-fold when DNA is single-stranded \cite{deaminate, cumskew}.
+
+In prokaryotes like bacteria, the DNA is usually in circular/closed loop form. In eukaryotes, the chromosomes are straight and usually much longer than for prokaryotes. Also, in eukaryotes and archaea, there are usually multiple origins of replication on a single chromosome.
+
+\section{Computational prediction of origin of replication}
+
+A measure called \textbf{GC-skew} is often used to predict and visualize the origin of replication in various simple bacteria. This measure is based on the asymmetry in the leading and lagging strands during DNA replication, and the fact that single-stranded DNA is more susceptible to mutations. Talking specifically about circular bacterial chromosomes, there is an origin, from where replication starts bidirectionally (along both directions of the circle) towards a common terminus at the other end of the chromosome. Firstly note that we can therefore expect the origin and terminus to be separated by half a chromosome length. Now, when the replication bubble forms at the origin of replication, the leading strand in one direction of replication is actually the lagging strand in the other direction of replication. Since the nucleotide sequence we see is one of the two strands, we must keep in mind that one half of this is the leading strand, and the other half is the lagging strand. In the lagging strand, as C can mutate faster, the proportion of C's as compared to that of G's is lower than that in the leading strand. The GC-skew can be defined as
+
+\begin{equation}
+	\frac{n_G-n_C}{n_G+n_C}
+\end{equation}
+
+where $n_G$ is the number of G's in a window of sequence, and $n_C$ is the number of C's in the same window. If we start from one end of the chromosome (one strand) and move to the other end, summing up the GC-skew as we move along windows, we have the \textit{cumulative GC-skew} \cite{cumskew}. The idea is that as we move along the leading strand, the GC-skew will linearly decrease (as the number of G's will be steadily lower than the number of C's), and as we move along the lagging strand, will linearly increase (as the number of G's will be steadily greater than the number of C's). The point in the chromosome where we cross from the leading strand to the lagging strand will be accompanied by a change in the nature of cumulative GC-skew from decreasing to increasing. This point will also mark the origin of replication. Similarly, the point where nature changes from increasing to decreasing will be the terminus of replication. These two points will be separated by roughly half a length of chromosome.
+
+Note that if we use pure GC-skew, the origin of replication can be identified not by a change in increasing/decreasing nature, but by a change in the sign/polarity. However, this method suffered from several local polarity changes as well, which were not necessarily the origin/terminus of replication \cite{cumskew}.
+
+Later, \cite{autocorr} took a different approach to this problem. It was observed that GC-skew does not accurately identify the origin of replication in some bacteria, some archaea and many eukaryotes, owing to multiple origins in eukaryotes, as well as more complex replication mechanisms. The idea was that skew looks at the number of G's and C's (their difference) in the windows, ignoring the positional information of the nucleotides. Their new measure uses the autocorrelation function $C(k)$ of a discrete sequence, $\{a_i:i=1,2,\hdots,N\}$ with $a_i \in \{+1, -1\}$ is defined as
+
+\begin{equation}
+C(k) = \frac{1}{N-k}\sum_{j=1}^{N-k}a_j a_{j+k}
+\end{equation}
+
+The correlation measure $C_G$ for the sequence was then defined as the average over all correlation values.
+
+\begin{equation}
+C_G = \frac{1}{N-1}\sum_{k=1}^{N-1}|C(k)|
+\end{equation}
+
+This autocorralation measure now also incorporates more information contained in the postitions of the nucleotides, than does GC-skew.  This $C_G$ measure can be defined over windows of the chromosome, and the sequence can be converted to $+1$ and $-1$ based one A, G, T or C. For example, based on G, \textit{AGGTTAC} could become $\{-1, +1, +1, -1, -1, -1, -1\}$. It was found that for identifying origin of replication, G gives the best results. To identify the origin of replication, an abrupt change in the correlation measure is observed. This method worked for bacteria, and performed better than GC-skew for archaea and few eukaryotes.
+
+Another measure, developed in \cite{icorr} modified the autocorrelation measure to use all the four nucleotides in the sequence while calculating autocorrelation measure, by assigning the four nucleotides $\{A, G, T, C\}$ to the set of values $\{+i, +1, -i, -1\}$, where $i = \sqrt{-1}$, and using the absolute values of the complex values of $C(k)$ obtained while computing $C_G$ for prokaryotes. For eukaryotes, $\{A, G, T, C\}$ were assigned to $\{-1, +1, -i, +i\}$ respectively, and the real parts of $C(k)$'s were used to compute $C_G$. In both cases, a sharp peak in the graph was used to identify origin of replication. This measure was found to perform better than the previous autocorrelation measure in \cite{autocorr} for prokaryotes.
+
+\section{Directions of work and investigation}
+
+We will initially work to \textbf{replicate/implement} the cumulative GC-skew, autocorrelation measure and iCorr measure, and visualize their performance. Then, we will use cumulative GC-skew to study one or two organisms with different mechanism of replication as done in \cite{cumskew} with interesting insights into the different mechanism of replication. We will follow this by augmenting the autocorrelation and iCorr methods with different techniques and tweaks. For example, first note that the autocorrelation measure for a general sequence $\{a_i:i = 1,2,\hdots,N\}$ is actually defined as
+
+\begin{equation}
+C(k) = \frac{1}{(N-k)\sigma^2}\sum_{j=1}^{N-k} (a_j - \mu)(a_{j+k} - \mu)
+\end{equation}
+
+where $\mu$ and $\sigma$ are the mean and standard deviation of the sequence. The values of the terms were chosen earlier so than the sequence was zero mean and unit variance. Now, one possible development over iCorr is to try assigning different complex values to the terms with absolute value 1, such as n\textsuperscript{th} roots of unity.
+
+Yet another possible change could be to treat the sequence as one of \textit{pairs} of nucleotides, and assign a complex value to each such possible pair to form a sequence (the pairs may be overlapping or non-overlapping). Instead of assigning all such pairs a unique value, we could also select a subset of all possible pairs, and give the rest of the pairs a default value. As a generalization of this, one could also visualize the sequence as one of 3-mers, 4-mers etc. (perhaps 3-mers would make sense, given that 3-base peiodicity is observed in the coding regions of chromosomes) 
+
+\textbf{QUESTION!!! - is ORI seen in CODING region? what about TERMINUS?}
+
+\textbf{It would be interesting to see if these tweaks give us any useful information about the origin of replication in the chromosome - REPHRASE!!!}
+
+Taking this idea even further, one way of capturing possible long-range effects could be to define the nucleotide as a sequence of k-mers, where only the first $r$ elements of each k-mer are considered ($k$ can even be 1). If time permits, this too will be studied, and the aim in this case will be to observe patterns possibly observed due to long-range effects.
+
+
+\begin{thebibliography}{9}
+
+\bibitem{AT}
+Yakovchuk, Peter and Protozanova, Ekaterina and Frank-Kamenetskii, Maxim D.
+\textit{Base-stacking and base-pairing contributions into thermal stability of the DNA double helix}.
+Nucleic Acids Research, Volume 34, Issue 2, 1 January 2006, Pages 564–574, https://doi.org/10.1093/nar/gkj454
+
+\bibitem{deaminate}
+Frederico LA, Kunkel TA, Shaw BR.
+\textit{A sensitive genetic assay for the detection of cytosine deamination: determination of rate constants and the activation energy}.
+Biochemistry, 1990 Mar 13;29(10):2532-7.
+
+\bibitem{cumskew}
+Andrei Grigoriev.
+\textit{Analyzing genomes with cumulative skew diagrams}.
+Nucleic Acids Research, 1998, Vol. 26, No. 10, Pages 2286-2290.
+
+\bibitem{autocorr}
+Kushal Shah and Annangarachari Krishnamachari.
+\textit{Nucleotide correlation based measure for identifying origin of replication in genomic sequences}.
+BioSystems 107 (2012) 52–55.
+
+\bibitem{icorr}
+Shubham Kundal, Raunak Lohiya and Kushal Shah.
+\textit{iCorr : Complex correlation method to detect origin of replication in prokaryotic and eukaryotic genomes}.
+BioSystems 107 (2012) 52–55.
+
+
+\end{thebibliography}
+
+
+\end{document}
