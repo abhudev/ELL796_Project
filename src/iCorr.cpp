@@ -4,7 +4,8 @@
 // #include <omp.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
+// #include <math.h>
+#include <complex>
 
 using namespace std;
 
@@ -14,7 +15,7 @@ int main(int argc, char const *argv[])
 {
 	if(argc != 5)
 	{
-		printf("Usage: ./auto <input_seq> <window_size> <corr_plot> <slide_dist>\n");
+		printf("Usage: ./iCorr <input_seq> <window_size> <corr_plot> <slide_dist>\n");
 		exit(1);
 	}
 
@@ -23,9 +24,10 @@ int main(int argc, char const *argv[])
 	int slide = atoi(argv[4]);
 
 	// Vector sequence - G is 1, C is 
-	vector<int> seq;
+	vector<complex<float> > seq;
 
 	char nuc;	// Input nucleotide, push in sequence
+	// Vector of sequence bits
 
 	// Read from file
 	ifstream fin;
@@ -41,10 +43,26 @@ int main(int argc, char const *argv[])
 		if(nuc != 'A' && nuc != 'G' && nuc != 'C' && nuc != 'T')
 			continue;
 		// cout<<nuc;
-		if(nuc == 'G')
-			seq.push_back(1);
-		else
-			seq.push_back(-1);
+		if(nuc == 'A')
+		{
+			complex<float> cnum(0, 1);
+			seq.push_back(cnum);
+		}
+		else if(nuc == 'G')
+		{
+			complex<float> cnum(1, 0);
+			seq.push_back(cnum);
+		}
+		else if(nuc == 'T')
+		{
+			complex<float> cnum(0, -1);
+			seq.push_back(cnum);
+		}
+		else if(nuc == 'C')
+		{
+			complex<float> cnum(-1, 0);
+			seq.push_back(cnum);
+		}
 	}
 
 	fin.close();
@@ -57,8 +75,8 @@ int main(int argc, char const *argv[])
 
 	// Hold the current (win-1) correlation values, for the current window
 
-	// Array to hold the cumulative GC skew values
-	vector<float> tmp_corr(num_win);
+	// Array to hold the corr values - tmp and final
+	vector<complex<float> > tmp_corr(num_win);
 	vector<float> corr(num_win, 0);
 
 	cout<<"Start autocorrelation computation...\n";
@@ -75,7 +93,7 @@ int main(int argc, char const *argv[])
 		for(int j = 0; j <= N-k-1; ++j)
 		{
 			// Unique element adding to the correlation
-			float corr_element = seq[j] * seq[j+k];
+			complex<float> corr_element = seq[j] * seq[j+k];
 			// float corr_element = seq[j] * seq[j+k] * DC;
 			// TODO - fix this line
 			// Fix lower limit
@@ -97,7 +115,7 @@ int main(int argc, char const *argv[])
 		}
 
 		for(int i = 0; i < num_win; i += slide)
-			corr[i] += (fabs(tmp_corr[i]*DC));
+			corr[i] += (std::abs(tmp_corr[i]*DC));
 		// printf("\r");
 	}
 

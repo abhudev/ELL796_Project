@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <complex>
+#include "transform_seq.h"
 
 using namespace std;
 
@@ -12,20 +14,23 @@ typedef long long ll;
 
 int main(int argc, char const *argv[])
 {
-	if(argc != 5)
+	if(argc != 6)
 	{
-		printf("Usage: ./auto <input_seq> <window_size> <corr_plot> <slide_dist>\n");
+		printf("Usage: ./iCorr_ext <input_seq> <window_size> <corr_plot> <slide_dist> <kmer>\n");
 		exit(1);
 	}
 
 	// Window
 	int win = atoi(argv[2]);
 	int slide = atoi(argv[4]);
+	int kmer = atoi(argv[5]);
 
 	// Vector sequence - G is 1, C is 
-	vector<int> seq;
+	vector<complex<float> > seq;
 
 	char nuc;	// Input nucleotide, push in sequence
+	// Vector of sequence nucleotides
+	vector<char> ch_seq;
 
 	// Read from file
 	ifstream fin;
@@ -37,17 +42,38 @@ int main(int argc, char const *argv[])
 	// getline(fin, line); // Clear the buffer
 
 	while(fin>>nuc)
-	{
-		if(nuc != 'A' && nuc != 'G' && nuc != 'C' && nuc != 'T')
-			continue;
-		// cout<<nuc;
-		if(nuc == 'G')
-			seq.push_back(1);
-		else
-			seq.push_back(-1);
-	}
-
+		ch_seq.push_back(nuc);
 	fin.close();
+
+	// Get the sequence
+	seq = kmer_transform(kmer, ch_seq);
+
+	// while(fin>>nuc)
+	// {
+	// 	if(nuc != 'A' && nuc != 'G' && nuc != 'C' && nuc != 'T')
+	// 		continue;
+	// 	// cout<<nuc;
+	// 	if(nuc == 'A')
+	// 	{
+	// 		complex<float> cnum(0, 1);
+	// 		seq.push_back(cnum);
+	// 	}
+	// 	else if(nuc == 'G')
+	// 	{
+	// 		complex<float> cnum(1, 0);
+	// 		seq.push_back(cnum);
+	// 	}
+	// 	else if(nuc == 'T')
+	// 	{
+	// 		complex<float> cnum(0, -1);
+	// 		seq.push_back(cnum);
+	// 	}
+	// 	else if(nuc == 'C')
+	// 	{
+	// 		complex<float> cnum(-1, 0);
+	// 		seq.push_back(cnum);
+	// 	}
+	// }	
 
 	int N = seq.size();
 	cout<<"Length of sequence is "<<N<<endl;
@@ -57,8 +83,8 @@ int main(int argc, char const *argv[])
 
 	// Hold the current (win-1) correlation values, for the current window
 
-	// Array to hold the cumulative GC skew values
-	vector<float> tmp_corr(num_win);
+	// Array to hold the corr values - tmp and final
+	vector<complex<float> > tmp_corr(num_win);
 	vector<float> corr(num_win, 0);
 
 	cout<<"Start autocorrelation computation...\n";
@@ -75,7 +101,7 @@ int main(int argc, char const *argv[])
 		for(int j = 0; j <= N-k-1; ++j)
 		{
 			// Unique element adding to the correlation
-			float corr_element = seq[j] * seq[j+k];
+			complex<float> corr_element = seq[j] * seq[j+k];
 			// float corr_element = seq[j] * seq[j+k] * DC;
 			// TODO - fix this line
 			// Fix lower limit
@@ -97,7 +123,7 @@ int main(int argc, char const *argv[])
 		}
 
 		for(int i = 0; i < num_win; i += slide)
-			corr[i] += (fabs(tmp_corr[i]*DC));
+			corr[i] += (std::abs(tmp_corr[i]*DC));
 		// printf("\r");
 	}
 
