@@ -7,6 +7,7 @@
 #include <math.h>
 #include <complex>
 #include "transform_seq.h"
+#include <random>
 
 using namespace std;
 
@@ -14,9 +15,9 @@ typedef long long ll;
 
 int main(int argc, char const *argv[])
 {
-	if(argc != 6)
+	if(argc != 7)
 	{
-		printf("Usage: ./iCorr_ext <input_seq> <window_size> <corr_plot> <slide_dist> <kmer>\n");
+		printf("Usage: ./ext <input_seq> <window_size> <corr_plot> <slide_dist> <kmer> <overlap>\n");
 		exit(1);
 	}
 
@@ -24,8 +25,15 @@ int main(int argc, char const *argv[])
 	int win = atoi(argv[2]);
 	int slide = atoi(argv[4]);
 	int kmer = atoi(argv[5]);
+	int overlap = atoi(argv[6]);
 
-	// Vector sequence - G is 1, C is 
+	if(overlap != 0 and overlap != 1)
+	{
+		printf("Overlap is true (1) or false (0)\n");
+		exit(1);
+	}
+
+	// Vector sequence - Complex numbers
 	vector<complex<float> > seq;
 
 	char nuc;	// Input nucleotide, push in sequence
@@ -38,16 +46,169 @@ int main(int argc, char const *argv[])
 	// Read first line of the file
 	string line;
 	getline(fin, line);
-	cout<<"Reading sequence\n";
+	// cout<<"Reading sequence %s\n";
+	printf("Reading sequence %s\n", argv[1]);
 	// getline(fin, line); // Clear the buffer
 
+	std::random_device rd;  //Will be used to obtain a seed for the random number engine
+    std::mt19937 gen(rd());
+
+    std::uniform_int_distribution<> gen_R(0, 1);
+    std::uniform_int_distribution<> gen_Y(0, 1);
+    std::uniform_int_distribution<> gen_K(0, 1);
+    std::uniform_int_distribution<> gen_M(0, 1);
+    std::uniform_int_distribution<> gen_S(0, 1);
+    std::uniform_int_distribution<> gen_W(0, 1);
+    std::uniform_int_distribution<> gen_B(0, 2);
+    std::uniform_int_distribution<> gen_D(0, 2);
+    std::uniform_int_distribution<> gen_H(0, 2);
+    std::uniform_int_distribution<> gen_V(0, 2);
+    std::uniform_int_distribution<> gen_N(0, 3);
+
+
 	while(fin>>nuc)
-		ch_seq.push_back(nuc);
+	{
+		if(nuc != 'A' && nuc != 'T' && nuc != 'C' && nuc != 'G')
+		{
+			if(nuc == 'R')
+			{
+				int cur = gen_R(gen);
+				if(cur == 0)			
+					ch_seq.push_back('A');
+				else if(cur == 1)	
+					ch_seq.push_back('G');
+			}
+			else if(nuc == 'Y')
+			{
+				int cur = gen_Y(gen);
+				if(cur == 0)
+					ch_seq.push_back('C');
+				else if(cur == 1)
+					ch_seq.push_back('T');
+			}
+			else if(nuc == 'K')
+			{
+				int cur = gen_K(gen);
+				if(cur == 0)
+					ch_seq.push_back('G');
+				else if(cur == 1)
+					ch_seq.push_back('T');
+			}
+			else if(nuc == 'M')
+			{
+				int cur = gen_M(gen);
+				if(cur == 0)
+					ch_seq.push_back('A');
+				else if(cur == 1)
+					ch_seq.push_back('C');
+			}
+			else if(nuc == 'S')
+			{
+				int cur = gen_S(gen);
+				if(cur == 0)
+					ch_seq.push_back('C');
+				else if(cur == 1)
+					ch_seq.push_back('G');
+			}
+			else if(nuc == 'W')
+			{
+				int cur = gen_W(gen);
+				if(cur == 0)
+					ch_seq.push_back('A');
+				else if(cur == 1)
+					ch_seq.push_back('T');
+				else if(cur == 2)
+					ch_seq.push_back('U');
+			}
+			else if(nuc == 'B')
+			{
+				int cur = gen_B(gen);
+				if(cur == 0)
+					ch_seq.push_back('C');
+				else if(cur == 1)
+					ch_seq.push_back('G');
+				else if(cur == 2)
+					ch_seq.push_back('T');
+			}
+			else if(nuc == 'D')
+			{
+				int cur = gen_D(gen);
+				if(cur == 0)
+					ch_seq.push_back('A');
+				else if(cur == 1)
+					ch_seq.push_back('G');
+				else if(cur == 2)
+					ch_seq.push_back('T');
+			}
+			else if(nuc == 'H')
+			{
+				int cur = gen_H(gen);
+				if(cur == 0)
+					ch_seq.push_back('A');
+				else if(cur == 1)
+					ch_seq.push_back('C');
+				else if(cur == 2)
+					ch_seq.push_back('T');
+			}
+			else if(nuc == 'V')
+			{
+				int cur = gen_V(gen);
+				if(cur == 0)
+					ch_seq.push_back('A');
+				else if(cur == 1)
+					ch_seq.push_back('C');
+				else if(cur == 2)
+					ch_seq.push_back('G');
+			}
+			else if(nuc == 'N')
+			{
+				int cur = gen_N(gen);
+				if(cur == 0)
+					ch_seq.push_back('A');
+				else if(cur == 1)
+					ch_seq.push_back('T');
+				else if(cur == 2)
+					ch_seq.push_back('G');
+				else if(cur == 3)
+					ch_seq.push_back('C');
+			}
+		}
+		else
+			ch_seq.push_back(nuc);
+	}
 	fin.close();
 
-	// Get the sequence
-	seq = kmer_transform(kmer, ch_seq);
+	printf("Size of input sequence = %ld\n", ch_seq.size());
+	// printf("Sequence\n");
+	// int rep = 0;
+	// for (int i = 0; i < ch_seq.size(); ++i)
+	// {		
+	// 	if(ch_seq[i] != 'A' && ch_seq[i] != 'T' && ch_seq[i] !='G' && ch_seq[i] != 'C')
+	// 		printf("\nOOPS - %c\n", ch_seq[i]);
+	// 	else
+	// 		printf("%c", ch_seq[i]);
+	// 	rep++;
+	// 	if(rep == 70)
+	// 	{
+	// 		rep = 0;
+	// 		printf("\n");
+	// 	}
+	// }
+	// exit(0);
 
+	
+	// Get the sequence
+	if(overlap == 1)
+	{
+		printf("Overlapping kmers - %d\n", kmer);
+		seq = kmer_transform(kmer, ch_seq);
+	}
+	else
+	{
+		printf("Disjoint kmers - %d\n", kmer);
+		seq = kmer_transform_non_overlap(kmer, ch_seq);
+	}
+	
 	// while(fin>>nuc)
 	// {
 	// 	if(nuc != 'A' && nuc != 'G' && nuc != 'C' && nuc != 'T')
@@ -91,7 +252,9 @@ int main(int argc, char const *argv[])
 	// Compute autocorrelation
 	for(int k = 1; k <= win-1; ++k)
 	{		
-		printf("Step %d of %d\n", k, win-1);
+		if(k % 20 == 0)
+			printf("Step %d of %d\r", k, win-1);
+		fflush(stdout);
 		// IMPORTANT - division is costly, do only once
 		float DC = 1.0/(win - k);	// Dividing constant
 		// Zero-initialize tmp_corr

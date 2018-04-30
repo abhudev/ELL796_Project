@@ -11,6 +11,8 @@
 
 #define _USE_MATH_DEFINES
 
+using namespace std;
+
 // convert from base 10 to base 4, store in k spaces
 vector<int> convert_base_k(int num, int k)
 {
@@ -66,12 +68,13 @@ map<vector<char>, complex<float> > make_kmap(int k)
 		for (int j = 0; j < k; ++j)
 			permute[i][j] = nucl[knum[j]];
 		complex<float> cnum(cos(i*theta), sin(i*theta));
-		kmap[permutep[i]] = cnum;
+		kmap[permute[i]] = cnum;
 	}
 
 	return kmap;
 }
 
+// This is for OVERELAPPING k-mers
 // Read in file, and return transformed sequence - kmer change
 vector<complex<float> > kmer_transform(int k, vector<char> ch_seq)
 {
@@ -85,6 +88,29 @@ vector<complex<float> > kmer_transform(int k, vector<char> ch_seq)
 	map<vector<char>, complex<float> > kmap = make_kmap(k);
 
 	for (int i = 0; i < N - k + 1; ++i)
+	{
+		for (int j = 0; j < k; ++j)
+			char_map[j] = ch_seq[i+j];
+		// Get the complex number corresponding to this char map
+		seq.push_back(kmap[char_map]);
+	}
+
+	return seq;
+}
+
+// Non-overlapping kmers
+vector<complex<float> > kmer_transform_non_overlap(int k, vector<char> ch_seq)
+{
+	int N = ch_seq.size();
+
+	// Seqeunce of complex floats
+	vector<complex<float> > seq;
+	// Hold kmer
+	vector<char> char_map(k);
+	// Map to complex value
+	map<vector<char>, complex<float> > kmap = make_kmap(k);
+
+	for (int i = 0; i < N - k + 1; i+=k)
 	{
 		for (int j = 0; j < k; ++j)
 			char_map[j] = ch_seq[i+j];

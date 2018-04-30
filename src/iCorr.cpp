@@ -83,7 +83,10 @@ int main(int argc, char const *argv[])
 	// Compute autocorrelation
 	for(int k = 1; k <= win-1; ++k)
 	{		
-		printf("Step %d of %d\n", k, win-1);
+		// printf("Step %d of %d\n", k, win-1);
+		if(k % 20 == 0)
+			printf("Step %d of %d\r", k, win-1);
+		fflush(stdout);
 		// IMPORTANT - division is costly, do only once
 		float DC = 1.0/(win - k);	// Dividing constant
 		// Zero-initialize tmp_corr
